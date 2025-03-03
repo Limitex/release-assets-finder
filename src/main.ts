@@ -12,9 +12,7 @@ export async function run(): Promise<void> {
     const repo = core.getInput('repo', { required: true })
     const pattern = core.getInput('pattern')
 
-    const client = new GitHubReleaseClient({
-      // token: core.getInput('token', { required: true })
-    })
+    const client = new GitHubReleaseClient()
 
     const regexp = new RegExp(pattern)
     const urls = await client.getMatchingAssetDownloadUrls(owner, repo, regexp)
