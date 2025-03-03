@@ -7,11 +7,18 @@
  */
 import { jest } from '@jest/globals'
 import * as core from '../__fixtures__/core.js'
-import { wait } from '../__fixtures__/wait.js'
+
+// Mock the GitHubReleaseClient class and its methods
+const mockGetMatchingAssetDownloadUrls = jest.fn()
+const mockGitHubReleaseClient = jest.fn().mockImplementation(() => ({
+  getMatchingAssetDownloadUrls: mockGetMatchingAssetDownloadUrls
+}))
 
 // Mocks should be declared before the module being tested is imported.
 jest.unstable_mockModule('@actions/core', () => core)
-jest.unstable_mockModule('../src/wait.js', () => ({ wait }))
+jest.unstable_mockModule('../src/github-release-client.js', () => ({
+  GitHubReleaseClient: mockGitHubReleaseClient
+}))
 
 // The module being tested should be imported dynamically. This ensures that the
 // mocks are used in place of any actual dependencies.
@@ -19,44 +26,86 @@ const { run } = await import('../src/main.js')
 
 describe('main.ts', () => {
   beforeEach(() => {
-    // Set the action's inputs as return values from core.getInput().
-    core.getInput.mockImplementation(() => '500')
+    // Mock the core.getInput method
+    core.getInput.mockImplementation((name) => {
+      switch (name) {
+        case 'owner':
+          return 'testOwner'
+        case 'repo':
+          return 'testRepo'
+        case 'pattern':
+          return '.*\\.zip'
+        default:
+          return ''
+      }
+    })
 
-    // Mock the wait function so that it does not actually wait.
-    wait.mockImplementation(() => Promise.resolve('done!'))
+    // Mock the return value of GitHubReleaseClient
+    mockGetMatchingAssetDownloadUrls.mockImplementation(() =>
+      Promise.resolve({
+        'v1.0.0': ['https://example.com/asset1.zip'],
+        'v1.1.0': [
+          'https://example.com/asset2.zip',
+          'https://example.com/asset3.zip'
+        ]
+      })
+    )
   })
 
   afterEach(() => {
     jest.resetAllMocks()
   })
 
-  it('Sets the time output', async () => {
+  it('outputs the correct URLs', async () => {
     await run()
 
-    // Verify the time output was set.
-    expect(core.setOutput).toHaveBeenNthCalledWith(
-      1,
-      'time',
-      // Simple regex to match a time string in the format HH:MM:SS.
-      expect.stringMatching(/^\d{2}:\d{2}:\d{2}/)
+    // Ensure getMatchingAssetDownloadUrls was called with the correct parameters
+    expect(mockGetMatchingAssetDownloadUrls).toHaveBeenCalledWith(
+      'testOwner',
+      'testRepo',
+      expect.any(RegExp)
+    )
+
+    // Ensure the output was set correctly
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'urls',
+      JSON.stringify(
+        {
+          'v1.0.0': ['https://example.com/asset1.zip'],
+          'v1.1.0': [
+            'https://example.com/asset2.zip',
+            'https://example.com/asset3.zip'
+          ]
+        },
+        null,
+        2
+      )
     )
   })
 
-  it('Sets a failed status', async () => {
-    // Clear the getInput mock and return an invalid value.
-    core.getInput.mockClear().mockReturnValueOnce('this is not a number')
+  it('reports an error when an error occurs', async () => {
+    // Simulate an error
+    const errorClient = {
+      getMatchingAssetDownloadUrls: jest
+        .fn()
+        .mockImplementation(() => Promise.reject(new Error('API error')))
+    }
 
-    // Clear the wait mock and return a rejected promise.
-    wait
-      .mockClear()
-      .mockRejectedValueOnce(new Error('milliseconds is not a number'))
+    // Mock the GitHubReleaseClient class and its methods
+    const errorMockGitHubReleaseClient = jest.fn().mockReturnValue(errorClient)
 
-    await run()
+    // Reset the modules and mock the GitHubReleaseClient class
+    jest.resetModules()
+    jest.unstable_mockModule('@actions/core', () => core)
+    jest.unstable_mockModule('../src/github-release-client.js', () => ({
+      GitHubReleaseClient: errorMockGitHubReleaseClient
+    }))
 
-    // Verify that the action was marked as failed.
-    expect(core.setFailed).toHaveBeenNthCalledWith(
-      1,
-      'milliseconds is not a number'
-    )
+    // Re-import the module
+    const { run: runWithError } = await import('../src/main.js')
+    await runWithError()
+
+    // Ensure the error was reported correctly
+    expect(core.setFailed).toHaveBeenCalledWith('API error')
   })
 })
