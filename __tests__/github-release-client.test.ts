@@ -1,53 +1,26 @@
 import { jest } from '@jest/globals'
+import {
+  OctokitMock,
+  mockListReleases,
+  resetOctokitMocks,
+  createTestReleases
+} from '../__fixtures__/octokit.js'
 
-// Create a mock for Octokit
-const OctokitMock = jest.fn()
-
+// Set up module mocks
 jest.unstable_mockModule('@octokit/rest', () => ({
   Octokit: OctokitMock
 }))
 
-// Import the module after setting up the mock
+// Import the module after setting up mocks
 const { GitHubReleaseClient } = await import('../src/github-release-client')
 
-// Type definitions
-type ListReleasesParams = {
-  owner: string
-  repo: string
-  per_page: number
-  page: number
-}
-
-type ReleaseAsset = {
-  name: string
-  browser_download_url: string
-}
-
-type ReleaseData = {
-  tag_name: string | null
-  assets: ReleaseAsset[]
-}
-
-type ListReleasesFunction = (
-  params: ListReleasesParams
-) => Promise<{ data: ReleaseData[] }>
-
 describe('GitHubReleaseClient', () => {
-  let mockListReleases: jest.MockedFunction<ListReleasesFunction>
-
   beforeEach(() => {
-    jest.resetAllMocks()
-    mockListReleases = jest.fn() as jest.MockedFunction<ListReleasesFunction>
-    // When creating an Octokit instance, replace repos.listReleases with our mock
-    OctokitMock.mockImplementation(() => ({
-      repos: {
-        listReleases: mockListReleases
-      }
-    }))
+    resetOctokitMocks()
   })
 
   test('getAllReleases retrieves releases across multiple pages', async () => {
-    // First page returns a release, second page returns an empty array
+    // First page returns releases, second page is empty
     mockListReleases
       .mockResolvedValueOnce({ data: [{ tag_name: 'v1.0.0', assets: [] }] })
       .mockResolvedValueOnce({ data: [] })
@@ -61,39 +34,7 @@ describe('GitHubReleaseClient', () => {
   })
 
   test('getMatchingAssetDownloadUrls returns correct asset URLs', async () => {
-    const fakeReleases: ReleaseData[] = [
-      {
-        tag_name: 'v1.0.0',
-        assets: [
-          {
-            name: 'file1.zip',
-            browser_download_url: 'http://example.com/file1.zip'
-          },
-          {
-            name: 'file1.txt',
-            browser_download_url: 'http://example.com/file1.txt'
-          }
-        ]
-      },
-      {
-        tag_name: 'v1.1.0',
-        assets: [
-          {
-            name: 'file2.zip',
-            browser_download_url: 'http://example.com/file2.zip'
-          }
-        ]
-      },
-      {
-        tag_name: null,
-        assets: [
-          {
-            name: 'file3.zip',
-            browser_download_url: 'http://example.com/file3.zip'
-          }
-        ]
-      }
-    ]
+    const fakeReleases = createTestReleases()
 
     mockListReleases
       .mockResolvedValueOnce({ data: fakeReleases })
