@@ -1,7 +1,12 @@
 import { RestEndpointMethodTypes } from '@octokit/rest';
 export type Release = RestEndpointMethodTypes['repos']['listReleases']['response']['data'][number];
-export type AssetUrlsByTag = {
-    [tagName: string]: string[];
+export type AssetInfo = {
+    name: string;
+    downloadUrl: string;
+};
+export type ReleaseAssetInfo = {
+    tag: string;
+    assets: AssetInfo[];
 };
 export type GitHubClientOptions = {
     perPage?: number;
@@ -30,7 +35,7 @@ export declare class GitHubReleaseClient {
      * @param owner Repository owner
      * @param repo Repository name
      * @param pattern Regular expression pattern to match asset names (optional)
-     * @returns Map of asset URLs by tag name
+     * @returns Array of release asset information
      */
-    getMatchingAssetDownloadUrls(owner: string, repo: string, pattern?: RegExp): Promise<AssetUrlsByTag>;
+    getMatchingAssetDownloadUrls(owner: string, repo: string, pattern?: RegExp): Promise<ReleaseAssetInfo[]>;
 }

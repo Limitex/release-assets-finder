@@ -30832,20 +30832,26 @@ class GitHubReleaseClient {
      * @param owner Repository owner
      * @param repo Repository name
      * @param pattern Regular expression pattern to match asset names (optional)
-     * @returns Map of asset URLs by tag name
+     * @returns Array of release asset information
      */
     async getMatchingAssetDownloadUrls(owner, repo, pattern) {
         try {
             const releases = await this.getAllReleases(owner, repo);
-            const result = {};
+            const result = [];
             for (const release of releases) {
                 if (!release.tag_name)
                     continue;
-                const matchedUrls = release.assets
+                const matchedAssets = release.assets
                     .filter((asset) => !pattern || pattern.test(asset.name))
-                    .map((asset) => asset.browser_download_url);
-                if (matchedUrls.length > 0) {
-                    result[release.tag_name] = matchedUrls;
+                    .map((asset) => ({
+                    name: asset.name,
+                    downloadUrl: asset.browser_download_url
+                }));
+                if (matchedAssets.length > 0) {
+                    result.push({
+                        tag: release.tag_name,
+                        assets: matchedAssets
+                    });
                 }
             }
             return result;
@@ -30869,8 +30875,8 @@ async function run() {
         const pattern = coreExports.getInput('pattern');
         const client = new GitHubReleaseClient();
         const regexp = new RegExp(pattern);
-        const urls = await client.getMatchingAssetDownloadUrls(owner, repo, regexp);
-        coreExports.setOutput('urls', JSON.stringify(urls, null, 2));
+        const releaseAssets = await client.getMatchingAssetDownloadUrls(owner, repo, regexp);
+        coreExports.setOutput('releases', JSON.stringify(releaseAssets, null, 2));
     }
     catch (error) {
         if (error instanceof Error)
