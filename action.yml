@@ -1,24 +1,30 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: 'Release Assets Finder'
+description: 'Fetch release assets download URLs from a GitHub repository'
+author: 'Limitex'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: download
+  color: blue
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  owner:
+    description: 'Repository owner'
     required: true
-    default: '1000'
+  repo:
+    description: 'Repository name'
+    required: true
+  pattern:
+    description: 'Regular expression pattern to filter assets'
+    required: false
 
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  releases:
+    description:
+      'JSON string containing matching asset download URLs grouped by release'
 
 runs:
-  using: node20
-  main: dist/index.js
+  using: 'node20'
+  main: 'dist/index.js'
