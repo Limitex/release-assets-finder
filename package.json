@@ -1,20 +1,23 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
+  "name": "release-assets-finder",
+  "description": "Find release assets from GitHub",
+  "version": "0.0.1",
+  "author": "Limitex",
   "type": "module",
   "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
+  "homepage": "https://github.com/limitex/release-assets-finder",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/limitex/release-assets-finder.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/limitex/release-assets-finder/issues"
   },
   "keywords": [
-    "actions"
+    "github",
+    "release",
+    "assets",
+    "finder"
   ],
   "exports": {
     ".": "./dist/index.js"
