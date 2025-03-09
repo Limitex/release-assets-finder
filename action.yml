@@ -1,4 +1,4 @@
-name: 'Get Release Assets'
+name: 'Release Assets Finder'
 description: 'Fetch release assets download URLs from a GitHub repository'
 author: 'Limitex'
 
