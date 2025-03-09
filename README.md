@@ -37,17 +37,17 @@ steps:
 
 ## Inputs
 
-| Input   | Description                                 | Required |
-| ------- | ------------------------------------------- | -------- |
-| owner   | Repository owner                            | Yes      |
-| repo    | Repository name                             | Yes      |
-| pattern | Regular expression pattern to filter assets | No       |
+| Input     | Description                                 | Required |
+| --------- | ------------------------------------------- | -------- |
+| `owner`   | Repository owner                            | Yes      |
+| `repo`    | Repository name                             | Yes      |
+| `pattern` | Regular expression pattern to filter assets | No       |
 
 ## Outputs
 
-| Output   | Description                           |
-| -------- | ------------------------------------- |
-| releases | JSON string containing matching asset |
+| Output     | Description                           |
+| ---------- | ------------------------------------- |
+| `releases` | JSON string containing matching asset |
 
 ## Example Output
 
