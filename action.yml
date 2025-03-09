@@ -1,11 +1,11 @@
 name: 'Get Release Assets'
 description: 'Fetch release assets download URLs from a GitHub repository'
-author: Your name or organization here
+author: 'Limitex'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: download
+  color: blue
 
 # Define your inputs here.
 inputs:
