@@ -15,9 +15,13 @@ export async function run(): Promise<void> {
     const client = new GitHubReleaseClient()
 
     const regexp = new RegExp(pattern)
-    const urls = await client.getMatchingAssetDownloadUrls(owner, repo, regexp)
+    const releaseAssets = await client.getMatchingAssetDownloadUrls(
+      owner,
+      repo,
+      regexp
+    )
 
-    core.setOutput('urls', JSON.stringify(urls, null, 2))
+    core.setOutput('releases', JSON.stringify(releaseAssets, null, 2))
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

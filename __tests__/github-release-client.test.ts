@@ -48,10 +48,26 @@ describe('GitHubReleaseClient', () => {
       pattern
     )
 
-    expect(assetUrls).toEqual({
-      'v1.0.0': ['http://example.com/file1.zip'],
-      'v1.1.0': ['http://example.com/file2.zip']
-    })
+    expect(assetUrls).toEqual([
+      {
+        tag: 'v1.0.0',
+        assets: [
+          {
+            name: 'file1.zip',
+            downloadUrl: 'http://example.com/file1.zip'
+          }
+        ]
+      },
+      {
+        tag: 'v1.1.0',
+        assets: [
+          {
+            name: 'file2.zip',
+            downloadUrl: 'http://example.com/file2.zip'
+          }
+        ]
+      }
+    ])
   })
 
   test('getAllReleases throws an error when Octokit fails', async () => {

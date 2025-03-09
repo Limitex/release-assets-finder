@@ -3,7 +3,14 @@ import { Octokit, RestEndpointMethodTypes } from '@octokit/rest'
 // Types
 export type Release =
   RestEndpointMethodTypes['repos']['listReleases']['response']['data'][number]
-export type AssetUrlsByTag = { [tagName: string]: string[] }
+export type AssetInfo = {
+  name: string
+  downloadUrl: string
+}
+export type ReleaseAssetInfo = {
+  tag: string
+  assets: AssetInfo[]
+}
 export type GitHubClientOptions = {
   perPage?: number
   token?: string
@@ -75,26 +82,32 @@ export class GitHubReleaseClient {
    * @param owner Repository owner
    * @param repo Repository name
    * @param pattern Regular expression pattern to match asset names (optional)
-   * @returns Map of asset URLs by tag name
+   * @returns Array of release asset information
    */
   async getMatchingAssetDownloadUrls(
     owner: string,
     repo: string,
     pattern?: RegExp
-  ): Promise<AssetUrlsByTag> {
+  ): Promise<ReleaseAssetInfo[]> {
     try {
       const releases = await this.getAllReleases(owner, repo)
-      const result: AssetUrlsByTag = {}
+      const result: ReleaseAssetInfo[] = []
 
       for (const release of releases) {
         if (!release.tag_name) continue
 
-        const matchedUrls = release.assets
+        const matchedAssets = release.assets
           .filter((asset) => !pattern || pattern.test(asset.name))
-          .map((asset) => asset.browser_download_url)
+          .map((asset) => ({
+            name: asset.name,
+            downloadUrl: asset.browser_download_url
+          }))
 
-        if (matchedUrls.length > 0) {
-          result[release.tag_name] = matchedUrls
+        if (matchedAssets.length > 0) {
+          result.push({
+            tag: release.tag_name,
+            assets: matchedAssets
+          })
         }
       }
 

@@ -42,13 +42,30 @@ describe('main.ts', () => {
 
     // Mock the return value of GitHubReleaseClient
     mockGetMatchingAssetDownloadUrls.mockImplementation(() =>
-      Promise.resolve({
-        'v1.0.0': ['https://example.com/asset1.zip'],
-        'v1.1.0': [
-          'https://example.com/asset2.zip',
-          'https://example.com/asset3.zip'
-        ]
-      })
+      Promise.resolve([
+        {
+          tag: 'v1.0.0',
+          assets: [
+            {
+              name: 'asset1.zip',
+              downloadUrl: 'https://example.com/asset1.zip'
+            }
+          ]
+        },
+        {
+          tag: 'v1.1.0',
+          assets: [
+            {
+              name: 'asset2.zip',
+              downloadUrl: 'https://example.com/asset2.zip'
+            },
+            {
+              name: 'asset3.zip',
+              downloadUrl: 'https://example.com/asset3.zip'
+            }
+          ]
+        }
+      ])
     )
   })
 
@@ -68,15 +85,32 @@ describe('main.ts', () => {
 
     // Ensure the output was set correctly
     expect(core.setOutput).toHaveBeenCalledWith(
-      'urls',
+      'releases',
       JSON.stringify(
-        {
-          'v1.0.0': ['https://example.com/asset1.zip'],
-          'v1.1.0': [
-            'https://example.com/asset2.zip',
-            'https://example.com/asset3.zip'
-          ]
-        },
+        [
+          {
+            tag: 'v1.0.0',
+            assets: [
+              {
+                name: 'asset1.zip',
+                downloadUrl: 'https://example.com/asset1.zip'
+              }
+            ]
+          },
+          {
+            tag: 'v1.1.0',
+            assets: [
+              {
+                name: 'asset2.zip',
+                downloadUrl: 'https://example.com/asset2.zip'
+              },
+              {
+                name: 'asset3.zip',
+                downloadUrl: 'https://example.com/asset3.zip'
+              }
+            ]
+          }
+        ],
         null,
         2
       )
