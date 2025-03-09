@@ -21,7 +21,7 @@ inputs:
 
 # Define your outputs here.
 outputs:
-  assets:
+  releases:
     description:
       'JSON string containing matching asset download URLs grouped by release'
 
